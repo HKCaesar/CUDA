@@ -51,6 +51,15 @@ void Process(int , void *)
         double ps = pos_psi;
         cv::Mat kernel = mkKernel(kernel_size, sig, th, lm, ps);
         cv::filter2D(src_f, dest, CV_32F, kernel);
+        cv::imshow("Process window", dest);
+                cv::Mat Lkernel(kernel_size*20, kernel_size*20, CV_32F);
+                cv::resize(kernel, Lkernel, Lkernel.size());
+                Lkernel /= 2.;
+                Lkernel += 0.5;
+                cv::imshow("Kernel", Lkernel);
+                cv::Mat mag;
+                cv::pow(dest, 2.0, mag);
+                cv::imshow("Mag", mag);
     }
 
 IplImage detect_and_draw(IplImage* img)
@@ -92,7 +101,7 @@ int main(int argc, char** argv)
         {
         			IplImage *img=cvQueryFrame(camera);
         	    	cv::Mat image = cvarrToMat(img);
-        	        cv::imshow("Src", image);
+        	        //cv::imshow("Src", image);
         	        cv::Mat src;
         	        cv::cvtColor(image, src, CV_BGR2GRAY);
         	        src.convertTo(src_f, CV_32F, 1.0/255, 0);
