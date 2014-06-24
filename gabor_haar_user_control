@@ -14,7 +14,7 @@ int kernel_size=21;
 int pos_sigma= 5;
 int pos_lm = 50;
 int pos_th = 0;
-int pos_psi = 90;
+int pos_psi = 0;
 cv::Mat src_f;
 cv::Mat dest;
 const char* cascade_name ="cars3.xml";
@@ -51,15 +51,13 @@ void Process(int , void *)
         double ps = pos_psi;
         cv::Mat kernel = mkKernel(kernel_size, sig, th, lm, ps);
         cv::filter2D(src_f, dest, CV_32F, kernel);
-        cv::imshow("Process window", dest);
+        //cv::imshow("Process window", dest);
                 cv::Mat Lkernel(kernel_size*20, kernel_size*20, CV_32F);
                 cv::resize(kernel, Lkernel, Lkernel.size());
                 Lkernel /= 2.;
                 Lkernel += 0.5;
                 cv::imshow("Kernel", Lkernel);
-                cv::Mat mag;
-                cv::pow(dest, 2.0, mag);
-                cv::imshow("Mag", mag);
+
     }
 
 IplImage detect_and_draw(IplImage* img)
@@ -109,21 +107,21 @@ int main(int argc, char** argv)
         	        {
         	            kernel_size+=1;
         	        }
-        	        cv::namedWindow("Process window", 1);
-        	        cv::createTrackbar("Sigma", "Process window", &pos_sigma, kernel_size, Process);
-        	        cv::createTrackbar("Lambda", "Process window", &pos_lm, 100, Process);
-        	        cv::createTrackbar("Theta", "Process window", &pos_th, 180, Process);
-        	        cv::createTrackbar("Psi", "Process window", &pos_psi, 360, Process);
+        	        cv::namedWindow("user control", 1);
+        	        cv::createTrackbar("Sigma", "user control", &pos_sigma, kernel_size, Process);
+        	        cv::createTrackbar("Lambda", "user control", &pos_lm, 100, Process);
+        	        cv::createTrackbar("Theta", "user control", &pos_th, 360, Process);
+        	        cv::createTrackbar("Psi", "user control", &pos_psi, 360, Process);
         	        Process(0,0);
-        	        cv::imshow("Process window", dest);
+        	        cv::imshow("user controls", dest);
         	        IplImage copy = dest;
         	           IplImage* new_image = &copy;
         	           IplImage* haar = cvCreateImage(cvGetSize(new_image), IPL_DEPTH_8U, 1);
         	           IplImage img_1=detect_and_draw(haar);
-        	           cvShowImage("result1", &img_1);
+        	           cvShowImage("detection with segmn", &img_1);
 
         	           IplImage img_2=detect_and_draw(img);
-        	           cvShowImage("result2", &img_2);
+        	           cvShowImage("normal car detection", &img_2);
 
 
 
