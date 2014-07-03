@@ -11,12 +11,12 @@ using namespace cv;
 using namespace std;
 
 Mat src; Mat src_gray;
-int thresh = 100;
-int max_thresh = 255;
+//int thresh = 100;
+//int max_thresh = 255;
 RNG rng(12345);
 Mat crop;
 
-void thresh_callback(int thres, int max_thresh )
+void thresh_callback(int thresh, int max_thresh )
 {
   Mat threshold_output;
   vector<vector<Point> > contours;
