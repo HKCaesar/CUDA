@@ -16,13 +16,6 @@ cv::Mat src;
 cv::Mat grey;
 cv::Mat dest[3];
 
-
-const char* keys =
-{
-    "{c |camera |true | use camera or not}"
-    "{fn|file_name|tree.avi | movie file }"
-};
-
 cv::Mat mkKernel(int ks, double sig, double th, double lm, double ps)
       {
           int hks = (ks-1)/2;
