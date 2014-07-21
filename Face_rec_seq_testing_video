@@ -247,34 +247,44 @@ croppedFaceImage.convertTo(croppedFaceImage,6);
      switch(predictedLabel)
      {
      case 0:
-         {name="Devanjan\0";
+         {
+        	 name="Devanjan\0";
          cvRectangle(img, pt1, pt2, CV_RGB(0, 255, 0), 3, 8, 0);
-     break;}
+     break;
+         }
      case 1:
-         {name="Gautam\0";
+         {
+        	 name="Gautam\0";
          cvRectangle(img, pt1, pt2, CV_RGB(0, 255, 0), 3, 8, 0);
-          break;}
+          break;
+         }
      case 2:
-         {name="Gourav\0";
+         {
+        	 name="Gourav\0";
          cvRectangle(img, pt1, pt2, CV_RGB(0, 255, 0), 3, 8, 0);
-          break;}
+          break;
+         }
      case 3:
-         {name="Joyal\0";
+         {
+        	 name="Joyal\0";
          cvRectangle(img, pt1, pt2, CV_RGB(0, 255, 0), 3, 8, 0);
-          break;}
+          break;
+         }
      case 4:
-         {name="Pradeep\0";
+         {
+        	 name="Pradeep\0";
          cvRectangle(img, pt1, pt2, CV_RGB(0, 255, 0), 3, 8, 0);
-          break;}
+          break;
+         }
      default:
-     {name="Unknown\0";
+     {
+    	 name="Unknown\0";
      cvRectangle(img, pt1, pt2, CV_RGB(255, 0, 0), 3, 8, 0);
-     break;}
+     break;
+     }
      }
 
-
     cv::Mat new_img = cvarrToMat(img);
-
 
     if(name=="Unknown\0")
      putText(new_img,name,cvPoint(pt1.x,pt1.y-10),FONT_HERSHEY_COMPLEX_SMALL,0.8,cvScalar(0,0,255),1,8,false);
