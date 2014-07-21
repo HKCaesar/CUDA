@@ -133,8 +133,8 @@ int main()
              fs << "projections" << "[";
                     for(int c=0;c<total_num_images;c++)
                       {
-                         Mat temporary=projections.col(c).clone().t(); //to be changed for our recognition code.
-                         fs << temporary; //to be changed for our recognition code.
+                         Mat temporary=projections.col(c).clone().t();
+                         fs << temporary;
                       }
                          fs << "]";
 
