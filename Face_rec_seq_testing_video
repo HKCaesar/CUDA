@@ -1,0 +1,290 @@
+// include the necessary libraries
+#include <iostream>
+#include <opencv2/opencv.hpp>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <math.h>
+#include <float.h>
+#include <limits.h>
+#include <time.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <iostream>
+#include <vector>
+
+
+#include "opencv2/core/core.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/contrib/contrib.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+
+using namespace std;
+using namespace cv;
+
+
+// Create a string that contains the exact cascade name
+const char* cascade_name =
+"haarcascade_frontalface_alt.xml";
+/* "haarcascade_profileface.xml";*/
+
+
+// Function prototype for detecting and drawing an object from an image
+void detect_and_draw(IplImage* image);
+
+
+// Main function, defines the entry point for the program.
+int main(int argc, char** argv)
+{
+
+// Create a new named window with title: result
+cvNamedWindow("result", 1);
+
+CvCapture* capture = capture = cvCaptureFromCAM(0); // capture from video device (Macbook iSight)
+
+// Create a sample image
+IplImage *img;
+IplImage *newImg;
+
+while (1) {
+newImg = cvQueryFrame(capture);
+if (!newImg) break;
+// flip image
+img = cvCreateImage(cvGetSize(newImg), IPL_DEPTH_8U, 1);
+img = newImg;
+cvFlip(img, img, 1);
+
+
+detect_and_draw(img);
+
+char c = cvWaitKey(33); // press escape to quit
+if (c == 27) break;
+
+}
+
+cvReleaseCapture(&capture);
+
+// Release the image
+cvReleaseImage(&img);
+
+// Destroy the window previously created with filename: "result"
+cvDestroyWindow("result");
+
+// return 0 to indicate successful execution of the program
+return 0;
+}
+
+//void filter(int label)
+//{
+// int count=0;
+
+//}
+// Function to detect and draw any faces that is present in an image
+void detect_and_draw(IplImage* img)
+{
+	//Image information
+				int img_cols=92;
+				int img_rows=112;
+				int img_size = img_cols*img_rows;
+
+				//Folder information
+				int num_folders=5;
+				int num_images_per_folder=10;
+				int total_num_images=num_folders*num_images_per_folder; // Total images in training set
+
+			size_t num_removed_eigenfaces=0; // =total_eigenfaces-desired_num_of_eigenfaces;
+
+Size size(img_cols,img_rows);
+CvRect box[100];
+// Create memory for calculations
+static CvMemStorage* storage = 0;
+
+// Create a new Haar classifier
+static CvHaarClassifierCascade* cascade = 0;
+
+int scale = 1;
+
+// Create a new image based on the input image
+IplImage* temp = cvCreateImage(cvSize(img->width / scale, img->height / scale), 8, 3);
+
+// Create two points to represent the face locations
+CvPoint pt1, pt2;
+int i;
+
+// Load the HaarClassifierCascade
+cascade = (CvHaarClassifierCascade*)cvLoad(cascade_name, 0, 0, 0);
+
+// Check whether the cascade has loaded successfully. Else report and error and quit
+if (!cascade)
+{
+fprintf(stderr, "ERROR: Could not load classifier cascade\n");
+return;
+}
+
+// Allocate the memory storage
+storage = cvCreateMemStorage(0);
+
+
+// Clear the memory storage which was used before
+cvClearMemStorage(storage);
+CvSeq* faces1;
+
+
+// Find whether the cascade is loaded, to find the faces. If yes, then:
+if (cascade)
+{
+// There can be more than one face in an image. So create a growable sequence of faces.
+// Detect the objects and store them in the sequence
+CvSeq* faces = cvHaarDetectObjects(img, cascade, storage,1.1, 2, CV_HAAR_DO_CANNY_PRUNING,cvSize(40, 40));
+faces1=faces;
+// Loop the number of faces found.
+for (i = 0; i < (faces ? faces->total : 0); i++)
+{
+// Create a new rectangle for drawing the face
+CvRect* r = (CvRect*)cvGetSeqElem(faces, i);
+box[i]=*r;
+}
+}
+
+cv::Mat new_img = cvarrToMat(img);
+
+char b[100];
+
+FileStorage fs;
+   fs.open("data_5_10.xml", FileStorage::READ);
+
+   Mat mean_vec;
+         fs["mean"] >> mean_vec;
+
+      mean_vec=mean_vec.reshape(0,img_size);
+
+     Mat eigenvalues;
+               fs["eigenvalues"] >> eigenvalues;
+               //cout<<eigenvalues<<endl;
+
+     Mat eigenvectors;
+               fs["eigenvectors"] >> eigenvectors;
+
+     Mat projections[total_num_images];
+     int count=0;
+
+     FileNode n = fs["projections"];
+         for (FileNodeIterator current = n.begin(); current != n.end(); current++)
+         {
+             FileNode item = *current;
+             item >> projections[count];
+             projections[count]=projections[count].reshape(0,total_num_images);
+             projections[count].pop_back(num_removed_eigenfaces);
+             count++;
+         }
+
+     Mat labels;
+             fs["labels"] >> labels;
+
+for(int j=0;j<faces1->total;j++)
+{
+
+Mat croppedFaceImage = new_img(box[j]).clone();
+
+
+cvtColor(croppedFaceImage,croppedFaceImage,CV_BGR2GRAY);
+//imshow("show",croppedFaceImage);
+sprintf(b,"crop%d.pgm",j);
+
+cv::resize(croppedFaceImage,croppedFaceImage,size);
+imwrite(b,croppedFaceImage);
+
+
+croppedFaceImage=croppedFaceImage.reshape(0,10304);
+croppedFaceImage.convertTo(croppedFaceImage,6);
+
+ Mat sub_vec;
+
+ sub_vec=croppedFaceImage-mean_vec;
+
+ Mat trans_eigenspace=eigenvectors.t();
+
+ Mat test_weight;
+ test_weight=trans_eigenspace*sub_vec;
+ test_weight.pop_back(num_removed_eigenfaces);
+
+ Scalar s[total_num_images];
+
+ for(int d=0;d<total_num_images;d++) // loop for calculating euclidean distances between all the training images and the test image
+    {
+ 	   Mat diff=test_weight-projections[d];
+ 	   pow(diff,2,diff);
+ 	   s[d]=sum(diff);
+ 	   sqrt(s[d],s[d]);
+    }
+
+   Scalar min=s[0];
+   int index;
+   for(int k=1;k<50;k++)
+   {
+  if(s[k][0]<min[0])
+  {
+  min=s[k];
+  index=k;
+  }
+  }
+   Mat predicted_mat=labels.col(index).clone(); // choosing the right index based on the minimum euclidean distance
+   int predictedLabel=predicted_mat.at<int>(0,0); //conversion into integer (not necessary)
+
+     pt1.x = box[j].x*scale;
+     pt2.x = (box[j].x + box[j].width)*scale;
+     pt1.y = box[j].y*scale;
+     pt2.y = (box[j].y + box[j].height)*scale;
+
+     char* name;
+     switch(predictedLabel)
+     {
+     case 0:
+         {name="Devanjan\0";
+         cvRectangle(img, pt1, pt2, CV_RGB(0, 255, 0), 3, 8, 0);
+     break;}
+     case 1:
+         {name="Gautam\0";
+         cvRectangle(img, pt1, pt2, CV_RGB(0, 255, 0), 3, 8, 0);
+          break;}
+     case 2:
+         {name="Gourav\0";
+         cvRectangle(img, pt1, pt2, CV_RGB(0, 255, 0), 3, 8, 0);
+          break;}
+     case 3:
+         {name="Joyal\0";
+         cvRectangle(img, pt1, pt2, CV_RGB(0, 255, 0), 3, 8, 0);
+          break;}
+     case 4:
+         {name="Pradeep\0";
+         cvRectangle(img, pt1, pt2, CV_RGB(0, 255, 0), 3, 8, 0);
+          break;}
+     default:
+     {name="Unknown\0";
+     cvRectangle(img, pt1, pt2, CV_RGB(255, 0, 0), 3, 8, 0);
+     break;}
+     }
+
+
+    cv::Mat new_img = cvarrToMat(img);
+
+
+    if(name=="Unknown\0")
+     putText(new_img,name,cvPoint(pt1.x,pt1.y-10),FONT_HERSHEY_COMPLEX_SMALL,0.8,cvScalar(0,0,255),1,8,false);
+    else
+     putText(new_img,name,cvPoint(pt1.x,pt1.y-10),FONT_HERSHEY_COMPLEX_SMALL,0.8,cvScalar(0,255,0),1,8,false);
+
+
+}
+cv::Mat new_img_d = cvarrToMat(img);
+imshow("result",new_img_d);
+// Release the temp image created.
+cvReleaseImage(&temp);
+}
