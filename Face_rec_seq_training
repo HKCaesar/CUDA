@@ -72,7 +72,7 @@ int main()
 
              eigenspace=eigenspace.t();
 
-
+/*
          //Show Eigen Faces as images.
              Mat eigenface_space_norm;
              Mat eigenface_space=eigenspace; // Look at line 63.
@@ -87,7 +87,7 @@ int main()
             	 imshow("eigenfaces",eigenface);
             	 waitKey(0);
              }
-
+*/
 
    // Step.4: Projecting Training Images into Eigenspace for creating Face feature vectors of training images.
 
