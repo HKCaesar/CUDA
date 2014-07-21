@@ -74,15 +74,15 @@ int main()
 
 
          //Show Eigen Faces as images.
-
+             Mat eigenface_space_norm;
              Mat eigenface_space=eigenspace; // Look at line 63.
-             normalize(eigenface_space,eigenface_space,0,255,NORM_MINMAX,CV_8UC1); //converts the type to unsigned char 8 bits.
+             normalize(eigenface_space,eigenface_space_norm,0,255,NORM_MINMAX,CV_8UC1); //converts the type to unsigned char 8 bits.
 
-             // This code displays the eigenfaces on window.
+          // This code displays the eigenfaces on window.
              for(int i=0;i<eigenface_space.cols;i++)
             {
             	Mat eigenface;
-            	eigenface = eigenface_space.col(i).clone(); // copy each column of eigenspace to a new Mat. NOTE: the Mat.clone() function is a must so that Mat eigenface is continuous (must for displaying).
+            	eigenface=eigenface_space_norm.col(i).clone(); // copy each column of eigenspace to a new Mat. NOTE: the Mat.clone() function is a must so that Mat eigenface is continuous (must for displaying).
                 eigenface=eigenface.reshape(0,img_rows);
             	 imshow("eigenfaces",eigenface);
             	 waitKey(0);
@@ -124,10 +124,12 @@ int main()
              string filename = "/home/maxerience-l2/cuda-workspace/Parallel_face_recognition/data_5_10.xml";
              FileStorage fs(filename, FileStorage::WRITE);
 
-             temp=temp.reshape(0,1);////to be removed for our recognition code.
+             temp=temp.reshape(0,1); // Have to be stored as a row vector for the standard recognition function to work.
+
              fs << "mean" << temp;
              fs << "eigenvectors" << eigenspace;
              fs << "eigenvalues" << eigenvalues;
+
              fs << "projections" << "[";
                     for(int c=0;c<total_num_images;c++)
                       {
@@ -135,6 +137,7 @@ int main()
                          fs << temporary; //to be changed for our recognition code.
                       }
                          fs << "]";
+
              fs << "labels" << labels;
 
        return 0;
