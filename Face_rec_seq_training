@@ -1,0 +1,155 @@
+#include "opencv2/opencv.hpp"
+#include <fstream>
+#include <opencv2/core/core.hpp>
+#include <iostream>
+#include <string>
+
+using namespace cv;
+using namespace std;
+
+int main()
+{
+	//Image information
+	int img_cols=92;
+	int img_rows=112;
+	int img_size = img_cols*img_rows;
+
+	//Folder information
+	int num_folders=5;
+	int num_images_per_folder=10;
+	int total_num_images=num_folders*num_images_per_folder; // Total images in training set
+
+	//Train Space
+	Mat train_space(img_size,1,CV_64FC1,Scalar(1)); //initialised for use in line 46
+	Mat sum(112,92,CV_64FC1,Scalar(0));	 // 64 bit float single channel. All values initialized to 0.
+
+	// Step.1 : Generate Face Vectors from Training images
+	for(int j=1;j<=num_folders;j++)
+	{
+		for(int i=1;i<=num_images_per_folder;i++)
+		{
+			stringstream file_loc; // Load file path  into file_loc
+			file_loc << "Img_train_folder/s"<<j<<"/"<< i<<".pgm"; // .pgm files are written into file_loc
+			Mat img_read=imread(file_loc.str(),0); // Read images into img_read
+			img_read.convertTo(img_read,6); //Converts to 64 float
+	        /*imshow("result",img_read);
+            waitKey(0);
+			cout<<img_read<<endl;*/
+
+			sum=img_read+sum;							//Used for Normalizing images in Step.2
+
+		    img_read=img_read.reshape(0,img_size);     // 1D column vector. 0 is for retaining pre-existing color channel.
+			hconcat(train_space,img_read,train_space); // Build Train space by concatenating images
+
+		}
+	}
+			train_space = train_space.colRange(1,train_space.cols); // Removes first column which was initialized to 1
+
+	// Step.2 :Normalize images - Calculate average and subtract from images
+			Mat Img_avg=(sum)/(total_num_images); // Averaging
+
+			/*
+	    	// Code to display the average face
+			sum.convertTo(sum,0);
+			imshow("result",sum);
+			waitKey(0);
+			 */
+
+			Img_avg=Img_avg.reshape(0,img_size);// Converting average image into a 1D column vector
+
+			Mat temp=Img_avg;
+
+        for(int i=0;i<total_num_images-1;i++)
+        {
+        	hconcat(Img_avg,temp,Img_avg); // Creating a matrix of equal size as train_space for subtraction from train space i.e. Normalizations
+        }
+        Mat norm_space=train_space-Img_avg; // Normalized image space
+
+    // Step.3:Create covariance matrix
+        Mat covar;
+        Mat norm_space_transpose; //Transposed Norm Space
+
+        norm_space_transpose=norm_space.t(); // transposing the space created by the face images
+        //cout<<norm_space_transpose.rows<<"\t"<<norm_space_transpose.cols<<endl;
+
+        covar=norm_space_transpose*norm_space; // Covariance matrix - Low dimensions through Dimensionality Reduction
+        //cout<<covar.rows<<"\t"<<covar.cols<<endl;
+        //cout<<covar<<endl;
+
+   //Step.4:Eigen Vectors Calculation --> Principal Component Analysis
+        PCA eigenvec_lowdim(covar,noArray(),CV_PCA_DATA_AS_COL);
+
+             Mat eigenspace_lowdim=eigenvec_lowdim.eigenvectors.clone();
+             Mat eigenvalues=eigenvec_lowdim.eigenvalues.clone();
+             //cout<<eigenvalues.rows<<"\t"<<eigenvalues.cols<<endl;
+             //cout<<eigenvalues<<endl;
+
+   //Step.5: Rempapping Eigen Vectors to higher dimensions
+             Mat eigenspace = norm_space*eigenspace_lowdim;
+             //cout<<eigenspace<<endl;
+
+             //Show Eigen Faces as images
+             Mat eigenface_space = eigenspace+Img_avg; // Look at line 63
+/*
+           // This code displays the eigenfaces on window
+             for(int i=0;i<eigenface_space.cols;i++)
+            {
+            	Mat eigenface;
+            	eigenface = eigenface_space.col(i).clone(); // copy each column of eigenspace to a new Mat. NOTE: the Mat.clone() function is a must so that Mat eigenface is continuous (must for displaying).
+                eigenface=eigenface.reshape(0,112);
+                eigenface.convertTo(eigenface,0);
+            	 imshow("result",eigenface);
+            	 waitKey(0);
+             }
+*/
+
+   // Step.6: Projecting Training Images into Eigen Space for creating Face feature vectors of training images
+
+             Mat trans_eigenspace;// Transposed eigenspace
+             trans_eigenspace=eigenspace.t(); // Transposition of eigenspace
+
+             Mat projections;// Contains weights for all the face vectors.
+             projections=trans_eigenspace*train_space;// The product of transposed eigenspace and train space gives the entire projection matrix.
+             //cout<<projections<<endl;
+
+
+    // Step.7: Creating an array of indexes for all the images
+
+             Mat labels(1,1,CV_32SC1,Scalar(0));
+
+             for(int i=0;i<num_folders;i++)
+             {
+            	for(int j=0;j<num_images_per_folder;j++)
+            	{
+            		Mat index(1,1,CV_32SC1,Scalar(0));
+            		if(j!=num_images_per_folder)
+            		{
+            			index=i;
+            		}
+            		labels.push_back(index);
+            	}
+             }
+             labels=labels.rowRange(1,labels.rows);
+             labels=labels.t();
+
+    // Step.8: Storing all the obtained data into an xml file
+
+             string filename = "/home/maxerience-l2/cuda-workspace/Parallel_face_recognition/data_5_10.xml";
+             FileStorage fs(filename, FileStorage::WRITE);
+
+             temp=temp.reshape(0,1);////to be removed for our recognition code
+             fs << "mean" << temp;
+             fs << "eigenvectors" << eigenspace;
+             fs << "eigenvalues" << eigenvalues;
+             //fs << "projections" << projections;
+             fs << "projections" << "[";
+                          for(int c=0;c<total_num_images;c++)
+                          {
+                        	  Mat temporary=projections.col(c).clone().t();//to be changed for our recognition code
+                              fs << temporary;//to be changed for our recognition code
+                          }
+                          fs << "]";
+             fs << "labels" << labels;
+
+       return 0;
+}
