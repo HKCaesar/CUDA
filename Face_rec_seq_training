@@ -98,7 +98,7 @@ int main()
              projections=trans_eigenspace*norm_space; // The product of transposed eigenspace and the normalised train space gives the entire projection matrix.
 
 
-    // Step.7: Creating an array of indexes for all the images.
+    // Step.5: Creating an array of indexes for all the images.
 
              Mat labels(1,1,CV_32SC1,Scalar(0));
 
@@ -119,7 +119,7 @@ int main()
              labels=labels.rowRange(1,labels.rows);
              labels=labels.t();
 
-    // Step.8: Storing all the obtained data into an xml file.
+    // Step.6: Storing all the obtained data into an xml file.
 
              string filename = "/home/maxerience-l2/cuda-workspace/Parallel_face_recognition/data_5_10.xml";
              FileStorage fs(filename, FileStorage::WRITE);
