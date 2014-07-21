@@ -25,61 +25,22 @@ int main()
 
     Mat eigenvectors;
               fs["eigenvectors"] >> eigenvectors;
-             // cout<<eigenvectors.at<double>(0,1)<<endl;
 
-    Mat eigenvectors1(10304,50,CV_64F,Scalar(1));
-             for(int q=0;q<eigenvalues.rows;q++)
-            	 {
-            	  Mat value=eigenvalues.row(q);
-            	  double val=value.at<double>(0,0);
-
-            	  //cout<<eigenvectors.col(0)<<endl;
-            	 //Mat single_eigenvalue(10304,1,CV_64FC1,Scalar(val));
-            	  eigenvectors1.col(q)=(eigenvectors.col(q))*1.0;
-
-            	 //cout<<eigenvectors1.at<double>(0,0)<<"\t"<<eigenvectors.at<double>(0,0)<<"\t"<<val<<endl;
-                // eigenvectors.col(q)=(eigenvectors.col(q)).mul(single_eigenvalue);
-              	  //cout<<eigenvectors<<endl;
-            	 }
-
-              //Mat M(10304,50,CV_64F,Scalar(1));
-              //eigenvectors1=eigenvectors1.mul(M);
-        /*     for(int t=0;t<50;t++)
-              {
-              Mat a;
-              a.create(10304,1,CV_64F);
-              a=eigenvectors.col(t);
-              a.convertTo(a,0);
-              a=a.reshape(0,112);
-               imshow("eigenface",a);
-               waitKey(0);
-              }
-        */
     Mat projections[50];
-    Mat temp;
-    fs["projections"] >> temp;
+    int count=0;
 
-   /* int i=0;
     FileNode n = fs["projections"];
         for (FileNodeIterator current = n.begin(); current != n.end(); current++)
         {
             FileNode item = *current;
-            item >> projections[i];
-            projections[i]=projections[i].reshape(0,50);
-            projections[i].pop_back(num_removed_eigenfaces);
-            i++;
+            item >> projections[count];
+            projections[count]=projections[count].reshape(0,50);
+            projections[count].pop_back(num_removed_eigenfaces);
+            count++;
         }
-*/
-    for(int i=0;i<50;i++)
-    {
-    	fs["projections"] >> temp;
-    	projections[i] = temp.col(i).clone();
-    	//projections[i].pop_back(num_removed_eigenfaces);
 
-    }
-
-    Mat indices;
-            fs["indices"] >> indices;
+    Mat labels;
+            fs["labels"] >> labels;
 
    Mat testSample = imread("1.pgm",0);
 
@@ -89,21 +50,13 @@ int main()
    Mat sub_vec;
 
    sub_vec=testSample-mean_vec;
- //  cout<<eigenvectors1<<endl;
-  /* sub_vec=sub_vec.reshape(0,112);
-   imshow("subvec",sub_vec);
 
-   waitKey(0);*/
-//cout<<sub_vec<<endl;
-   Mat trans_eigenspace=eigenvectors1.reshape(0,50);//transpose
-   PCA eigenspace(eigenvectors1,noArray(),CV_PCA_DATA_AS_COL);
+   Mat trans_eigenspace=eigenvectors.reshape(0,50);//transpose
+   PCA eigenspace(eigenvectors,noArray(),CV_PCA_DATA_AS_COL);
 
-   //Mat test_weight=eigenspace.project(sub_vec);
-   //cout<<test_weight<<endl;
    Mat test_weight;
    test_weight=trans_eigenspace*sub_vec;
-  // cout<<test_weight<<endl;
-   //test_weight.pop_back(num_removed_eigenfaces);
+   test_weight.pop_back(num_removed_eigenfaces);
 
   Scalar s[50];
 
@@ -128,10 +81,11 @@ int main()
   }
 //m++;
 //int predicted=m/10;
-   Mat predicted_mat=indices.col(m).clone();
+   Mat predicted_mat=labels.col(m).clone();
    int predicted=predicted_mat.at<int>(0,0);
 
 cout<<predicted<<endl;
-    // fs.release();
+
+fs.release();
         return (0);
 }
