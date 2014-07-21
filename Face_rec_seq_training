@@ -72,23 +72,22 @@ int main()
 
              eigenspace=eigenspace.t();
 
-       /*
+
          //Show Eigen Faces as images.
 
-             Mat eigenface_space = eigenspace; // Look at line 63.
-             normalize(eigenface_space,eigenface_space,0,255,NORM_MINMAX,CV_8UC1);
+             Mat eigenface_space=eigenspace; // Look at line 63.
+             normalize(eigenface_space,eigenface_space,0,255,NORM_MINMAX,CV_8UC1); //converts the type to unsigned char 8 bits.
 
              // This code displays the eigenfaces on window.
              for(int i=0;i<eigenface_space.cols;i++)
             {
             	Mat eigenface;
             	eigenface = eigenface_space.col(i).clone(); // copy each column of eigenspace to a new Mat. NOTE: the Mat.clone() function is a must so that Mat eigenface is continuous (must for displaying).
-                eigenface=eigenface.reshape(0,112);
-                eigenface.convertTo(eigenface,0);
-            	 imshow("f",eigenface);
+                eigenface=eigenface.reshape(0,img_rows);
+            	 imshow("eigenfaces",eigenface);
             	 waitKey(0);
              }
-*/
+
 
    // Step.4: Projecting Training Images into Eigenspace for creating Face feature vectors of training images.
 
