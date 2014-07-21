@@ -138,7 +138,7 @@ int main()
                       }
                          fs << "]";
 
-             fs << "labels" << labels;
+             fs << "labels" << labels; 
 
        return 0;
 }
