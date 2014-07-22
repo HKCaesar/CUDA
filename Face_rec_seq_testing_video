@@ -89,17 +89,17 @@ return 0;
 // Function to detect and draw any faces that is present in an image
 void detect_and_draw(IplImage* img)
 {
-	//Image information
-				int img_cols=92;
-				int img_rows=112;
-				int img_size = img_cols*img_rows;
+//Image information
+int img_cols=92;
+int img_rows=112;
+int img_size = img_cols*img_rows;
 
-				//Folder information
-				int num_folders=5;
-				int num_images_per_folder=10;
-				int total_num_images=num_folders*num_images_per_folder; // Total images in training set
+//Folder information
+int num_folders=5;
+int num_images_per_folder=10;
+int total_num_images=num_folders*num_images_per_folder; // Total images in training set
 
-			size_t num_removed_eigenfaces=0; // =total_eigenfaces-desired_num_of_eigenfaces;
+size_t num_removed_eigenfaces=0; // =total_eigenfaces-desired_num_of_eigenfaces;
 
 Size size(img_cols,img_rows);
 CvRect box[100];
@@ -215,23 +215,23 @@ croppedFaceImage.convertTo(croppedFaceImage,6);
  test_weight=trans_eigenspace*sub_vec;
  test_weight.pop_back(num_removed_eigenfaces);
 
- Scalar s[total_num_images];
+ Scalar euc_dist[total_num_images];
 
  for(int d=0;d<total_num_images;d++) // loop for calculating euclidean distances between all the training images and the test image
     {
- 	   Mat diff=test_weight-projections[d];
- 	   pow(diff,2,diff);
- 	   s[d]=sum(diff);
- 	   sqrt(s[d],s[d]);
+  Mat diff=test_weight-projections[d];
+  pow(diff,2,diff);
+  euc_dist[d]=sum(diff);
+  sqrt(euc_dist[d],euc_dist[d]);
     }
 
-   Scalar min=s[0];
+   Scalar min=euc_dist[0];
    int index;
    for(int k=1;k<50;k++)
    {
-  if(s[k][0]<min[0])
+  if(euc_dist[k][0]<min[0])
   {
-  min=s[k];
+  min=euc_dist[k];
   index=k;
   }
   }
@@ -248,37 +248,37 @@ croppedFaceImage.convertTo(croppedFaceImage,6);
      {
      case 0:
          {
-        	 name="Devanjan\0";
+         name="Devanjan\0";
          cvRectangle(img, pt1, pt2, CV_RGB(0, 255, 0), 3, 8, 0);
      break;
          }
      case 1:
          {
-        	 name="Gautam\0";
+         name="Gautam\0";
          cvRectangle(img, pt1, pt2, CV_RGB(0, 255, 0), 3, 8, 0);
           break;
          }
      case 2:
          {
-        	 name="Gourav\0";
+         name="Gourav\0";
          cvRectangle(img, pt1, pt2, CV_RGB(0, 255, 0), 3, 8, 0);
           break;
          }
      case 3:
          {
-        	 name="Joyal\0";
+         name="Joyal\0";
          cvRectangle(img, pt1, pt2, CV_RGB(0, 255, 0), 3, 8, 0);
           break;
          }
      case 4:
          {
-        	 name="Pradeep\0";
+         name="Pradeep\0";
          cvRectangle(img, pt1, pt2, CV_RGB(0, 255, 0), 3, 8, 0);
           break;
          }
      default:
      {
-    	 name="Unknown\0";
+     name="Unknown\0";
      cvRectangle(img, pt1, pt2, CV_RGB(255, 0, 0), 3, 8, 0);
      break;
      }
@@ -298,3 +298,4 @@ imshow("result",new_img_d);
 // Release the temp image created.
 cvReleaseImage(&temp);
 }
+
