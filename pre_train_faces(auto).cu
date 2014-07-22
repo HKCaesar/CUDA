@@ -25,10 +25,10 @@ const char* cascade_name =
 "haarcascade_frontalface_alt.xml";
 /* "haarcascade_profileface.xml";*/
 Size size(92,112);
-int n=10;
+int n=100;
 int k=1;
 char b[100];
-int limit=301;
+int limit=11;
 Mat croppedFaceImage;
 int t=10;
 CvSeq* faces1;
@@ -42,23 +42,27 @@ CvCapture* capture = capture = cvCaptureFromCAM(0); // capture from video device
 IplImage *img;
 IplImage *newImg;
 
+string folderName = "/home/maxerience-l2/cuda-workspace/Face_rec_seq/Img_train_folder/samples";
+string folderCreateCommand = "mkdir "+folderName;
+system(folderCreateCommand.c_str());
+
 while(1)
 {
 newImg = cvQueryFrame(capture);
 if (!newImg) break;
 //Mat frame = cvarrToMat(newImg);
-cvShowImage("source",newImg);
+cvShowImage("Video stream",newImg);
 waitKey(10);
 for(int s=0;s<t*300;s++)
-	{
-	for(int p=0;p<10000;p++){};
-	}
+{
+for(int p=0;p<10000;p++){};
+}
 
 img = cvCreateImage(cvGetSize(newImg), IPL_DEPTH_8U, 1);
 img = newImg;
 cvFlip(img, img, 1);
 detect_and_draw(img);
-sprintf(b,"test/%d.pgm",k);
+sprintf(b,"/home/maxerience-l2/cuda-workspace/Face_rec_seq/Img_train_folder/samples/%d.pgm",k);
 if (faces1->total==0)continue;
 cvtColor(croppedFaceImage,croppedFaceImage,CV_BGR2GRAY);
 imwrite(b,croppedFaceImage);
@@ -69,7 +73,7 @@ if (k==limit)break;
 
 cvReleaseCapture(&capture);
 cvReleaseImage(&img);
-cvDestroyWindow("result");
+cvDestroyWindow("Video stream");
 return 0;
 }
 void detect_and_draw(IplImage* img)
@@ -105,9 +109,10 @@ cv::Mat new_img = cvarrToMat(img);
 for(int j=0;j<faces1->total;j++)
 {
 croppedFaceImage = new_img(box[j]).clone();
-imshow("show",croppedFaceImage);
+imshow("Sample collected",croppedFaceImage);
 cv::resize(croppedFaceImage,croppedFaceImage,size);
 
 }
+
 cvReleaseImage(&temp);
 }
