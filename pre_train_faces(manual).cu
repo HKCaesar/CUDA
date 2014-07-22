@@ -30,15 +30,15 @@ using namespace cv;
 const char* cascade_name =
 "haarcascade_frontalface_alt.xml";
 /* "haarcascade_profileface.xml";*/
-Size size(200,200);
+Size size(92,112);
 int n=10;
 int i=1;
+int k=1;
 char b[100];
+int limit=11;
 Mat croppedFaceImage;
 
 void detect_and_draw(IplImage* image);
-
-
 
 int main(int argc, char** argv)
 {
@@ -49,6 +49,10 @@ CvCapture* capture = capture = cvCaptureFromCAM(0); // capture from video device
 
 IplImage *img;
 IplImage *newImg;
+
+string folderName = "/home/maxerience-l2/cuda-workspace/Face_rec_seq/Img_train_folder/samples";
+string folderCreateCommand = "mkdir "+folderName;
+system(folderCreateCommand.c_str());
 
 while(1)
 {
@@ -64,12 +68,14 @@ detect_and_draw(img);
 
 char c = cvWaitKey(20);
 if (c == 32)
-{   i++;
-	sprintf(b,"test/crop%d.pgm",i);
-	cvtColor(croppedFaceImage,croppedFaceImage,CV_BGR2GRAY);
-	imwrite(b,croppedFaceImage);
+{ i++;
+sprintf(b,"/home/maxerience-l2/cuda-workspace/Face_rec_seq/Img_train_folder/samples/%d.pgm",i);
+cvtColor(croppedFaceImage,croppedFaceImage,CV_BGR2GRAY);
+imwrite(b,croppedFaceImage);
+std::cout<<k<<std::endl;
+k++;
+if (k==limit)break;
 }
-
 }
 
 cvReleaseCapture(&capture);
@@ -79,7 +85,6 @@ return 0;
 }
 void detect_and_draw(IplImage* img)
 {
-
 CvRect box[10];
 static CvMemStorage* storage = 0;
 static CvHaarClassifierCascade* cascade = 0;
@@ -112,7 +117,6 @@ for(int j=0;j<faces1->total;j++)
 croppedFaceImage = new_img(box[j]).clone();
 imshow("show",croppedFaceImage);
 cv::resize(croppedFaceImage,croppedFaceImage,size);
-
 }
 cvReleaseImage(&temp);
 }
