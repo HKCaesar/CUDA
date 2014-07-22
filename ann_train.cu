@@ -75,7 +75,7 @@ int main()
 	int iterations = nnetwork.train(X, Y,cv::Mat(),cv::Mat(),params);
 	printf( "Training iterations: %i\n\n", iterations);
 
-	CvFileStorage* storage = cvOpenFileStorage( "/home/maxerience-l1/cuda-workspace/bat/param.xml", 0, CV_STORAGE_WRITE );
+	CvFileStorage* storage = cvOpenFileStorage( "/home/maxerience-l1/cuda-workspace/bat/neural_test.xml", 0, CV_STORAGE_WRITE );
 	nnetwork.write(storage,"DigitOCR");
 	cvReleaseFileStorage(&storage);
 
