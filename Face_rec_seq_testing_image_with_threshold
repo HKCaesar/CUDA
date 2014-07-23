@@ -1,0 +1,124 @@
+#include "opencv2/opencv.hpp"
+#include <fstream>
+#include <opencv2/core/core.hpp>
+#include <iostream>
+#include <string>
+
+using namespace cv;
+using namespace std;
+
+int main()
+{
+	//Image information
+		int img_cols=92;
+		int img_rows=112;
+		int img_size = img_cols*img_rows;
+
+		//Folder information
+		int num_folders=5;
+		int num_images_per_folder=10;
+		int total_num_images=num_folders*num_images_per_folder; // Total images in training set
+
+	size_t num_removed_eigenfaces=0; // =total_eigenfaces-desired_num_of_eigenfaces;
+
+  //Step.1: Open and Read content from xml file which contains training information
+    FileStorage fs;
+    fs.open("data_5_10.xml", FileStorage::READ);
+
+    Mat mean_vec;
+        fs["mean"] >> mean_vec;
+
+     mean_vec=mean_vec.reshape(0,img_size);
+
+    Mat eigenvalues;
+              fs["eigenvalues"] >> eigenvalues;
+              //cout<<eigenvalues<<endl;
+
+    Mat eigenvectors;
+              fs["eigenvectors"] >> eigenvectors;
+
+    Mat projections[total_num_images];
+    int count=0;
+
+    FileNode n = fs["projections"];
+        for (FileNodeIterator current = n.begin(); current != n.end(); current++)
+        {
+            FileNode item = *current;
+            item >> projections[count];
+            projections[count]=projections[count].reshape(0,total_num_images);
+            projections[count].pop_back(num_removed_eigenfaces);
+            count++;
+        }
+
+    Mat labels;
+            fs["labels"] >> labels;
+
+    Mat threshold_mat;
+            fs["threshold"] >> threshold_mat;
+            double threshold=threshold_mat.at<double>(0,0);
+
+  //Step.2: Convert input images to 1D face vectors
+
+   Mat testSample = imread("1.pgm",0);
+
+   testSample=testSample.reshape(0,img_size);
+   testSample.convertTo(testSample,6);
+
+   Mat sub_vec;
+
+  //Step.3: Normalization of test image
+
+   sub_vec=testSample-mean_vec;
+
+  //Step.4: Project normalised image on eigenspace
+
+   Mat trans_eigenspace=eigenvectors.t(); // transposition of eigenspace
+
+   Mat test_weight; // test image weight vector
+   test_weight=trans_eigenspace*sub_vec; // projection onto eigenspace to obtain weight vector
+   test_weight.pop_back(num_removed_eigenfaces);
+
+  Scalar s[total_num_images];
+
+  //Step.5: Calculate euclidean distances
+
+   for(int j=0;j<total_num_images;j++) // loop for calculating euclidean distances between all the training images and the test image
+   {
+	   Mat diff=test_weight-projections[j];
+	   pow(diff,2,diff);
+	   s[j]=sum(diff);
+	   sqrt(s[j],s[j]);
+   }
+
+   //Step.6: Find out the index of the image that gives the minimum euclidean distance
+
+   Scalar min=s[0];
+   int index;
+   for(int k=0;k<total_num_images;k++) // loop for calculating minimum of all the euclidean distances
+   {
+	 if(s[k][0]<min[0])
+	{
+		 min=s[k];
+		 index=k;
+	}
+  }
+   cout<<"threshold:"<<threshold<<endl;
+   cout<<"minimum euclidean distance:"<<min[0]<<endl;
+   if(min[0]>threshold)
+   {
+	   cout<<"person is unknown"<<endl;
+	   return 0;
+   }
+
+   Mat predicted_mat=labels.col(index).clone(); // choosing the right index based on the minimum euclidean distance
+   int predicted=predicted_mat.at<int>(0,0); // conversion into integer (not necessary)
+
+  //Step.7: display predicted index
+
+  cout<<"predicted label:"<<predicted<<endl;
+
+fs.release();
+
+return (0);
+
+}
