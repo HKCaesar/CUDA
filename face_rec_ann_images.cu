@@ -50,9 +50,9 @@ int main()
 
 	cv::Mat layers(5,1,CV_32S);
 	layers.at<int>(0,0) = 10304;//number of pixls in an image
-	layers.at<int>(1,0)=20;//hidden layer1
-	layers.at<int>(2,0)=10;//hidden layer2
-	layers.at<int>(3,0)=5;//hidden layer2
+	layers.at<int>(1,0)=200;//hidden layer1
+	layers.at<int>(2,0)=150;//hidden layer2
+	layers.at<int>(3,0)=100;//hidden layer2
 	layers.at<int>(4,0) =3;//output layer
 	//create the neural network using the function
 
@@ -82,7 +82,7 @@ int main()
 
 
 	cv::Mat classificationResult=Mat::zeros(1, 3, CV_32F);
-		cv::Mat test_sample=imread("4.jpg",0);
+		cv::Mat test_sample=imread("joyal1.jpg",0);
 		test_sample.convertTo(test_sample, CV_32F, 1.0/255.0);
 		imshow("test_sample",test_sample);
 		//waitKey(0);
@@ -100,10 +100,18 @@ int main()
 		 {
 			value = classificationResult.at<float>(0,index);
 			if(value>maxValue)
-				  {   maxValue = value;
+				  {
+					maxValue = value;
+
 			          maxIndex=index;
+
                    }
 	      }
+		if (maxValue<0.6)
+		{
+			cout<<"no match found"<<endl;
+			return 0;
+		}
 		std::cout<<maxIndex<<endl;
 		switch(maxIndex)
 	     {
