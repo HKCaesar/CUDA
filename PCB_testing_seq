@@ -1,0 +1,123 @@
+// include the necessary libraries
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <math.h>
+#include <float.h>
+#include <limits.h>
+#include <ctype.h>
+#include <vector>
+#include <time.h>
+//#include "utils.h"
+#include <opencv2/opencv.hpp>
+#include <cuda.h>
+#include <cuda_runtime.h>
+
+#include "opencv2/core/core.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/contrib/contrib.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+
+using namespace std;
+using namespace cv;
+
+int main()
+{
+	// Step 1: Input reference and test image into the workspace
+
+		    Mat image_reference = imread("reference_image.jpg");
+		    if (image_reference.empty())
+		    {
+		       cout << "Cannot load image!" << endl;
+		       return -1;
+		     }
+		       namedWindow( "Reference Image", CV_WINDOW_AUTOSIZE );
+		       imshow( "Reference Image", image_reference );
+		      // waitKey(0);
+
+		      //getting and printing pixel information
+
+		       int numRows_reference=image_reference.rows;
+		       int numCols_reference=image_reference.cols;
+		       int numPixels_reference=numRows_reference*numCols_reference;
+
+		       /* cout<< numRows <<endl;
+		          cout<< numCols <<endl;
+		          cout<< numPixels <<endl;
+		       */
+
+		      //converting BGR, which is an inbuilt format of openCV to RGBA
+
+		      cv::cvtColor(image_reference, image_reference, CV_BGR2RGBA);
+
+	/*	       namedWindow( "RGBA", CV_WINDOW_AUTOSIZE );
+		       imshow( "RGBA", image_reference );
+		       waitKey(0);
+	*/
+		       Mat image_test = imread("test_image.jpg");
+		           if (image_test.empty())
+		           {
+		              cout << "Cannot load image!" << endl;
+		              return -1;
+		           }
+		              namedWindow( "Test Image", CV_WINDOW_AUTOSIZE );
+		              imshow( "Test Image", image_test );
+		              //waitKey(0);
+
+		             //getting and printing pixel information
+
+		              int numRows_test=image_test.rows;
+		              int numCols_test=image_test.cols;
+		              int numPixels_test=numRows_test*numCols_test;
+
+		              /* cout<< numRows <<endl;
+		                 cout<< numCols <<endl;
+		                 cout<< numPixels <<endl;
+		              */
+
+		             //converting BGR, which is an inbuilt format of openCV to RGBA
+
+		             cv::cvtColor(image_test, image_test, CV_BGR2RGBA);
+
+		      /*      namedWindow( "RGBA", CV_WINDOW_AUTOSIZE );
+		              imshow( "RGBA", image_test );
+		              waitKey(0);
+	*/
+		             int numRows;
+		                      int numCols;
+		                      int numPixels;
+
+		                      if(numRows_reference==numRows_test && numCols_reference==numCols_test)
+
+		                      {
+		            	        	  numRows=numRows_reference;
+		            	        	  numCols=numCols_reference;
+		            	        	  numPixels=numRows*numCols;
+		            	      }
+
+		                      else
+		                    	  return -1;
+
+		             TickMeter tm;
+		                 tm.start();
+
+		             Mat difference_image;
+		             difference_image.create(numRows,numCols,CV_8UC4);
+
+		             difference_image=image_reference-image_test;
+		             cv::cvtColor(difference_image,difference_image,CV_BGR2RGBA);
+
+		             tm.stop();
+		             double detectionTime = tm.getTimeMilli();
+		             cout<<detectionTime<<endl;
+
+		             namedWindow("Difference Image",CV_WINDOW_AUTOSIZE);
+		             imshow("Difference Image",difference_image);
+		             waitKey(0);
+
+		             return 0;
+}
