@@ -29,7 +29,7 @@ int main()
 {
 	// Step 1: Input reference and test image into the workspace
 
-		    Mat image_reference = imread("reference_image.jpg");
+		    Mat image_reference = imread("reference_image");
 		    if (image_reference.empty())
 		    {
 		       cout << "Cannot load image!" << endl;
@@ -58,7 +58,7 @@ int main()
 		       imshow( "RGBA", image_reference );
 		       waitKey(0);
 	*/
-		       Mat image_test = imread("test_image.jpg");
+		       Mat image_test = imread("test_image");
 		           if (image_test.empty())
 		           {
 		              cout << "Cannot load image!" << endl;
@@ -113,7 +113,7 @@ int main()
 
 		             tm.stop();
 		             double detectionTime = tm.getTimeMilli();
-		             cout<<detectionTime<<endl;
+		             cout<<"Time consumed: "<<detectionTime<<" msecs"<<endl;
 
 		             namedWindow("Difference Image",CV_WINDOW_AUTOSIZE);
 		             imshow("Difference Image",difference_image);
