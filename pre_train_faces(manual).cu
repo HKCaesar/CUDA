@@ -68,8 +68,9 @@ detect_and_draw(img);
 
 char c = cvWaitKey(20);
 if (c == 32)
-{ i++;
+{
 sprintf(b,"/home/maxerience-l2/cuda-workspace/Face_rec_seq/Img_train_folder/samples/%d.pgm",i);
+i++;   
 cvtColor(croppedFaceImage,croppedFaceImage,CV_BGR2GRAY);
 imwrite(b,croppedFaceImage);
 std::cout<<k<<std::endl;
