@@ -22,7 +22,10 @@ void thresh_callback(int thres, int max_thresh )
   vector<Vec4i> hierarchy;
 
   /// Detect edges using Threshold
-  threshold( src_gray, threshold_output, thresh, 255, THRESH_BINARY );
+  adaptiveThreshold(src_gray,threshold_output,max_thresh, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY_INV, 75,10);
+  //Canny(src_gray,threshold_output,thresh, max_thresh, 3,false );
+  //threshold( src_gray, threshold_output, thresh, max_thresh, THRESH_BINARY );
+ 
   /// Find contours
   findContours( threshold_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
 
@@ -47,7 +50,7 @@ void thresh_callback(int thres, int max_thresh )
 	   }
   std::sort(areas,areas+i);
   int index;
-  int k=areas[i-2];
+  int k=areas[i-1];
   std::cout<<k<<std::endl;
   for( i = 0; i< contours.size(); i++ )
        {
