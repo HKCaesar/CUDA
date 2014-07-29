@@ -42,7 +42,7 @@ cv::Mat dest[12];
  int Process(int ks,int sigma, int lamda,  int psi)
      {
 
-     	 seg=abs(grey);
+     	 seg=abs(grey); 
 
      	for (int i=0;i<12;i++)
      	{
